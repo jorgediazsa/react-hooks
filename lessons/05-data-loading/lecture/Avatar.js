@@ -19,6 +19,35 @@ import ProgressCircle from "app/ProgressCircle"
 // For this Avatar to work, we need to load the user and all of their posts
 // so we can calculate the rings on their avatar. Right now, it's just empty.
 
+class Posts extends React.Component {
+  state = { posts: null }
+
+  subscribe() {
+    this.unsub = subscribeToPosts(this.props.uid, posts => {
+      this.setState({ posts })
+    })
+  }
+
+  componentDidMount() {
+    this.subscribe()
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.uid !== this.props.uid) {
+      this.unsub()
+      this.subscribe()
+    }
+  }
+
+  componentWillUnmount() {
+    this.unsub()
+  }
+
+  render() {
+    return this.props.children(this.state.posts)
+  }
+}
+
 export default function Avatar({ uid, size = 50, bg, className, ...rest }) {
   const [ user, setUser] = useState(null)
 
@@ -37,13 +66,7 @@ export default function Avatar({ uid, size = 50, bg, className, ...rest }) {
 
   const [posts, setPosts] = useState(null)
 
-  useEffect(() => {
-    const unsub = subscribeToPosts(uid, posts => {
-      setPosts(posts)
-    })
-
-    return unsub
-  }, [uid])
+  useEffect(() => subscribeToPosts(uid, posts => setPosts(posts)), [uid])
 
   if (!user) {
     return (
