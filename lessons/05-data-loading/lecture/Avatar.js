@@ -48,7 +48,7 @@ class Posts extends React.Component {
   }
 }
 
-export default function Avatar({ uid, size = 50, bg, className, ...rest }) {
+function useUser(uid) {
   const [ user, setUser] = useState(null)
 
   useEffect(() => {
@@ -64,9 +64,22 @@ export default function Avatar({ uid, size = 50, bg, className, ...rest }) {
     }
   }, [uid])
 
-  const [posts, setPosts] = useState(null)
+  return user
+}
 
+function usePosts(uid) {
+  const [posts, setPosts] = useState(null)
   useEffect(() => subscribeToPosts(uid, posts => setPosts(posts)), [uid])
+  return posts
+}
+
+function useUserAndPosts(uid) {
+  return { user: useUser(uid), posts: usePosts(uid) }
+}
+
+export default function Avatar({ uid, size = 50, bg, className, ...rest }) {
+  
+  const { user, posts } = useUserAndPosts(uid)
 
   if (!user) {
     return (
