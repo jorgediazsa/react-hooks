@@ -4,7 +4,7 @@ import { FaDumbbell } from "react-icons/fa"
 
 import { signup } from "app/utils"
 import TabsButton from "app/TabsButton"
-import DateFields, { MonthField, DayField, YearField } from "app/DateFields"
+import DateFields, { MonthField, DayField, YearField, DateFields as DateFieldsNew } from "app/DateFields"
 
 function TextInput({ id, label, type = "text" }) {
   return (
@@ -56,7 +56,7 @@ export default function SignupForm() {
         <TextInput id="photoURL" label="Avatar URL" />
         <TextInput id="email" label="Email" />
         <TextInput id="password" label="Password" />
-        <p>
+        {/* <p>
           <span>Start:</span>{" "}
           <DateFields
             value={startDate}
@@ -64,6 +64,14 @@ export default function SignupForm() {
             start={2018}
             end={2019}
           />
+        </p> */}
+        <p>
+          <span>Start:</span>{" "}
+          <DateFieldsNew value={startDate} onChange={setStartDate}>
+            <DayField />/
+            <MonthField />/
+            <YearField start={2018} end={2019} />
+          </DateFieldsNew>
         </p>
         <TabsButton>
           <FaDumbbell />
