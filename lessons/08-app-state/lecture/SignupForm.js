@@ -4,6 +4,7 @@ import TabsButton from "app/TabsButton"
 import { FaDumbbell } from "react-icons/fa"
 import { DateFields, MonthField, DayField, YearField } from "app/DateFields"
 import TextInput from "app/TextInput"
+import { initialState } from "./appReducer"
 
 /******************************************************************************/
 // 1. [open useAuth.js]
@@ -14,13 +15,33 @@ import TextInput from "app/TextInput"
 // in to React, but in more composable way. Let's take a look.
 
 export default function SignupForm() {
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [startDate, setStartDate] = useState(new Date("March 1, 2019"))
+  const [state, dispatch] = useReducer(
+    (state, action) => {
+      switch(action.type) {
+        case 'SIGNUP':
+          return { ...state, loading: true }
+          break;
+        case 'SIGNUP_ERROR':
+          return { ...state, loading: false, error: action.error }
+        case 'START_DATE_CHANGE':
+          return { ...state, startDate: action.date }
+        default:
+          throw new Error(`Unrecognized action: ${action.type}`)
+      }
+    },
+    {
+      error: null,
+      loading: false,
+      startDate: new Date("March 1, 2019")
+    }
+  )
+
+  const { error, loading, startDate } = state
 
   const handleSignup = async event => {
     event.preventDefault()
-    setLoading(true)
+    dispatch({ type: "SIGNUP" })
+    // setLoading(true)
     const [displayName, photoURL, email, password] = event.target.elements
     try {
       await signup({
@@ -31,9 +52,14 @@ export default function SignupForm() {
         startDate
       })
     } catch (error) {
-      setLoading(false)
-      setError(error)
+      dispatch({ type: "SIGNUP_ERROR", error })
+      // setLoading(false)
+      // setError(error)
     }
+  }
+
+  const setStartDate = (date) => {
+    dispatch({ type: 'START_DATE_CHANGE', date })
   }
 
   return (
