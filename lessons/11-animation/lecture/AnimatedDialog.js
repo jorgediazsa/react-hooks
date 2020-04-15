@@ -1,38 +1,56 @@
-import React, { useRef, useEffect } from "react"
+import React, { useRef } from "react"
 import { DialogOverlay, DialogContent } from "@reach/dialog"
 import { useTransition, animated } from "react-spring"
 import { FaTimes } from "react-icons/fa"
+
+animated.DialogOverlay = animated(DialogOverlay)
+animated.DialogContent = animated(DialogContent)
 
 /******************************************************************************/
 // Let's animate the dialog when it opens and closes with react-spring
 export default function AnimatedDialog(props) {
   const rootRef = useRef(null)
-  if (!rootRef.current) {
-    rootRef.current = document.getElementById("root")
+
+  const updateRootElement = (item, state, props) => {
+    if (item) {
+      if (!rootRef.current) {
+        rootRef.current = document.getElementById("root")
+      }
+      rootRef.current.style.filter = `blur(${props.blur}px)`
+    }
   }
 
-  const opacity = 1
-  const y = 0
-  const blur = props.isOpen ? 8 : 0
+  const transitions = useTransition(props.isOpen ? props : false, {
+    from: { opacity: 0, y: -10, blur: 0 },
+    enter: { opacity: 1, y: 0, blur: 8 },
+    leave: { opacity: 0, y: 10, blur: 0 },
+    onFrame: updateRootElement
+  })
 
-  useEffect(() => {
-    rootRef.current.style.filter = `blur(${blur}px)`
-  }, [blur])
-
-  return props.isOpen ? (
-    <DialogOverlay style={{ opacity }} onDismiss={props.onDismiss}>
-      <DialogContent
-        style={{
-          transform: `translate3d(0px, ${y}px, 0px)`
-        }}
+  return transitions.map(({ item, key, props: { opacity, y } }) => {
+    return item.isOpen ? (
+      <animated.DialogOverlay
+        key={key}
+        style={{ opacity }}
+        onDismiss={item.onDismiss}
       >
-        {props.children}
-        <button className="Dialog_close icon_button" onClick={props.onDismiss}>
-          <FaTimes aria-label="Close new post dialog" />
-        </button>
-      </DialogContent>
-    </DialogOverlay>
-  ) : null
+        <animated.DialogContent
+          style={{
+            transform: y.interpolate(y => `translate3d(0px, ${y}px, 0px)`)
+          }}
+        >
+          {item.children}
+          <button
+            className="Dialog_close icon_button"
+            onClick={item.onDismiss}
+          >
+            <FaTimes aria-label="Close new post dialog" />
+          </button>
+        </animated.DialogContent>
+      </animated.DialogOverlay>
+    ) : null
+  })
+  
 }
 
 /******************************************************************************/
